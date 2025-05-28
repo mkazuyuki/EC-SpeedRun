@@ -4,21 +4,34 @@
 
 ```ps1
 Param(
-	[parameter(mandatory=$true)][String]$InstallMediaPath = "C:\Users\Administrator\Downloads\en-us_windows_server_2025_updated_april_2025_x64_dvd_ea86301d.iso"
-	[parameter(mandatory=$true)][int]$CPUCores  = 4
-	[parameter(mandatory=$true)][int]$MEMORY    = 8GB
-	[parameter(mandatory=$true)][int]$DISK1size = 50GB
-	[parameter(mandatory=$true)][int]$DISK2SIZE = 50GB
-	[parameter(mandatory=$true)][String]$DISK2SIZE = "Virtual Switch Internal"
+	[parameter(mandatory=$false)][String]$InstallMediaPath = "C:\Users\Administrator\Downloads\en-us_windows_server_2025_updated_april_2025_x64_dvd_ea86301d.iso",
+	[parameter(mandatory=$false)][int]$CPUCores   = 4,
+	[parameter(mandatory=$false)][long]$MEMORY    = 8GB,
+	[parameter(mandatory=$false)][long]$DISK1size = 50GB,
+	[parameter(mandatory=$false)][long]$DISK2SIZE = 50GB,
+	[parameter(mandatory=$false)][String]$DISK2SIZE = "Virtual Switch Internal",
 
-	[parameter(mandatory=$true)][String]$VM1NAME = "ws25-1"
-	[parameter(mandatory=$true)][String]$VM1DISK1 = "C:\HyperV\$VM1name.vhdx"
-	[parameter(mandatory=$true)][String]$VM1DISK2 = "C:\HyperV\$VM1name-2.vhdx"
+	[parameter(mandatory=$false)][String]$VM1NAME = "ws25-1",
+	[parameter(mandatory=$false)][String]$VM1DISK1 = "C:\HyperV\$VM1name.vhdx",
+	[parameter(mandatory=$false)][String]$VM1DISK2 = "C:\HyperV\$VM1name-2.vhdx",
 
-	[parameter(mandatory=$true)][String]$VM2NAME = "ws25-2"
-	[parameter(mandatory=$true)][String]$VM2DISK1 = "C:\HyperV\$VM2name.vhdx"
-	[parameter(mandatory=$true)][String]$VM2DISK2 = "C:\HyperV\$VM2name-2.vhdx"
+	[parameter(mandatory=$false)][String]$VM2NAME = "ws25-2",
+	[parameter(mandatory=$false)][String]$VM2DISK1 = "C:\HyperV\$VM2name.vhdx",
+	[parameter(mandatory=$false)][String]$VM2DISK2 = "C:\HyperV\$VM2name-2.vhdx"
 )
+
+function makeVM{
+	New-VM -Name $VMNAME -MemoryStartupBytes $MEMORY -NewVHDPath $VMDISK1 -NewVHDSizeBytes $DISK1size -SwitchName $vSwitch -Generation 2
+	New-VHD -Path $VMDISK2 -SizeBytes $DISK2SIZE -Dynamic
+	Add-VMHardDiskDrive -VMName $VMNAME -Path $VMDISK2
+	Set-VMProcessor $VMNAME -Count $CPUCores
+	Set-VMMemory -VMName $VMNAME -DynamicMemoryEnabled $true -MinimumBytes 512MB -StartupBytes $MEMORY -MaximumBytes $MEMORY
+	Add-VMDvdDrive -VMName $VMNAME -Path $InstallMediaPath
+	$DVD = Get-VMDvdDrive -VMName $VMNAME
+	Set-VMFirmware $VMNAME -FirstBootDevice $DVD
+	# Set-VMKeyProtector -VMName $VMNAME -NewLocalKeyProtector
+	# Enable-VMTPM -VMName $VMNAME
+}
 
 #
 # Primary VM
@@ -26,16 +39,7 @@ Param(
 $VMNAME = $VM1NAME
 $VMDISK1 = $VM1DISK1
 $VMDISK2 = $VM1DISK2
-New-VM -Name $VMNAME -MemoryStartupBytes $MEMORY -NewVHDPath $VMDISK1 -NewVHDSizeBytes $DISK1size -SwitchName $vSwitch -Generation 2
-New-VHD -Path $VMDISK2 -SizeBytes $DISK2SIZE -Dynamic
-Add-VMHardDiskDrive -VMName $VMNAME -Path $VMDISK2
-Set-VMProcessor $VMNAME -Count $CPUCores
-Set-VMMemory -VMName $VMNAME -DynamicMemoryEnabled $true -MinimumBytes 512MB -StartupBytes $MEMORY -MaximumBytes $MEMORY
-Add-VMDvdDrive -VMName $VMNAME -Path $InstallMediaPath
-$DVD = Get-VMDvdDrive -VMName $VMNAME
-Set-VMFirmware $VMNAME -FirstBootDevice $DVD
-# Set-VMKeyProtector -VMName $VMNAME -NewLocalKeyProtector
-# Enable-VMTPM -VMName $VMNAME
+makeVM
 
 ## Print result
 $VMInfo = Get-VM $VMName | Select-Object Name, State, @{Name="CPU"; Expression={$_.ProcessorCount}}, @{Name="MemoryGB"; Expression={[math]::Round($_.MemoryAssigned / 1GB, 2)}}, Version | Format-Table -AutoSize | Out-String
@@ -58,14 +62,7 @@ vmconnect $env:COMPUTERNAME $VMNAME
 $VMNAME = $VM2NAME
 $VMDISK1 = $VM2DISK1
 $VMDISK2 = $VM2DISK2
-New-VM -Name $VMNAME -MemoryStartupBytes $MEMORY -NewVHDPath $VMDISK1 -NewVHDSizeBytes $DISK1size -SwitchName $vSwitch -Generation 2
-New-VHD -Path $VMDISK2 -SizeBytes $DISK2SIZE -Dynamic
-Add-VMHardDiskDrive -VMName $VMNAME -Path $VMDISK2
-Set-VMProcessor $VMNAME -Count $CPUCores
-Set-VMMemory -VMName $VMNAME -DynamicMemoryEnabled $true -MinimumBytes 512MB -StartupBytes $MEMORY -MaximumBytes $MEMORY
-Add-VMDvdDrive -VMName $VMNAME -Path $InstallMediaPath
-$DVD = Get-VMDvdDrive -VMName $VMNAME
-Set-VMFirmware $VMNAME -FirstBootDevice $DVD
+makeVM
 
 $VMInfo = Get-VM $VMName | Select-Object Name, State, @{Name="CPU"; Expression={$_.ProcessorCount}}, @{Name="MemoryGB"; Expression={[math]::Round($_.MemoryAssigned / 1GB, 2)}}, Version | Format-Table -AutoSize | Out-String
 Write-Host "[I] VM Information:"
