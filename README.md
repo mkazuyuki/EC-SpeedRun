@@ -6,16 +6,16 @@
 Param(
 	[parameter(mandatory=$true)][String]$InstallMediaPath = "C:\Users\Administrator\Downloads\en-us_windows_server_2025_updated_april_2025_x64_dvd_ea86301d.iso"
 	[parameter(mandatory=$true)][int]$CPUCores  = 4
-    [parameter(mandatory=$true)][int]$MEMORY    = 8GB
+	[parameter(mandatory=$true)][int]$MEMORY    = 8GB
 	[parameter(mandatory=$true)][int]$DISK1size = 50GB
 	[parameter(mandatory=$true)][int]$DISK2SIZE = 50GB
 	[parameter(mandatory=$true)][String]$DISK2SIZE = "Virtual Switch Internal"
 
-	[parameter(mandatory=$true)][String]$VM1NAME = "ws25-1"",
+	[parameter(mandatory=$true)][String]$VM1NAME = "ws25-1"
 	[parameter(mandatory=$true)][String]$VM1DISK1 = "C:\HyperV\$VM1name.vhdx"
 	[parameter(mandatory=$true)][String]$VM1DISK2 = "C:\HyperV\$VM1name-2.vhdx"
 
-	[parameter(mandatory=$true)][String]$VM2NAME = "ws25-2"",
+	[parameter(mandatory=$true)][String]$VM2NAME = "ws25-2"
 	[parameter(mandatory=$true)][String]$VM2DISK1 = "C:\HyperV\$VM2name.vhdx"
 	[parameter(mandatory=$true)][String]$VM2DISK2 = "C:\HyperV\$VM2name-2.vhdx"
 )
