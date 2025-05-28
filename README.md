@@ -9,7 +9,7 @@ Param(
 	[parameter(mandatory=$false)][long]$MEMORY    = 8GB,
 	[parameter(mandatory=$false)][long]$DISK1size = 50GB,
 	[parameter(mandatory=$false)][long]$DISK2SIZE = 50GB,
-	[parameter(mandatory=$false)][String]$DISK2SIZE = "Virtual Switch Internal",
+	[parameter(mandatory=$false)][String]$vSwitch = "Virtual Switch Internal",
 
 	[parameter(mandatory=$false)][String]$VM1NAME = "ws25-1",
 	[parameter(mandatory=$false)][String]$VM1DISK1 = "C:\HyperV\$VM1name.vhdx",
@@ -22,6 +22,7 @@ Param(
 
 function makeVM{
 	New-VM -Name $VMNAME -MemoryStartupBytes $MEMORY -NewVHDPath $VMDISK1 -NewVHDSizeBytes $DISK1size -SwitchName $vSwitch -Generation 2
+	Add-VMNetworkAdapter -VMName $VMNAME -SwitchName $vSwitch -Name "NIC2"
 	New-VHD -Path $VMDISK2 -SizeBytes $DISK2SIZE -Dynamic
 	Add-VMHardDiskDrive -VMName $VMNAME -Path $VMDISK2
 	Set-VMProcessor $VMNAME -Count $CPUCores
