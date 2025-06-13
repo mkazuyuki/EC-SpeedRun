@@ -103,3 +103,14 @@ netsh interface ip set address name="Ethernet 2" static      10.0.0.12 255.0.0.0
 ## Configuring DNS
 netsh interface ipv4 set dns name="Ethernet" source=static addr=192.168.137.1 register=primary
 ```
+
+## SQL Server Express monitor resource properties
+```
+Monitor Level*	Level 2 (monitoring by update/select)
+Database Name*	demo
+Instance*	SQLEXPRESS
+User Name	sa
+Password	••••••••
+Monitor Table Name*	SQLWATCH
+ODBC Driver Name	SQL Server
+```
